@@ -218,7 +218,7 @@ node verify_multiscreen_flows.js
 
 ---
 ## Live Website Page  
-[Game Link ] (https://neon-relicgames.vercel.app/)
+[Game Link ](https://neon-relicgames.vercel.app/)
 
 ## 📄 License & Credits
 - **Project:** NEON RELIC: THE LAST SIGNAL
