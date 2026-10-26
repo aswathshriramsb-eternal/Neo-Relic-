@@ -217,6 +217,8 @@ node verify_multiscreen_flows.js
 6. **Reduced Motion & Forced Colors:** Real-time support for OS `prefers-reduced-motion` and `@media (forced-colors: active)`. Toggling "Reduced Motion" in settings instantly removes bobbing, particles, and flashes while preserving full gameplay readability.
 
 ---
+## Live Website Page  
+[Game Link ] (https://neon-relicgames.vercel.app/)
 
 ## 📄 License & Credits
 - **Project:** NEON RELIC: THE LAST SIGNAL
