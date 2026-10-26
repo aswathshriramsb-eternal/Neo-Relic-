@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NEON RELIC: THE LAST SIGNAL</title>
+  <!-- Inline SVG data-URI favicon to prevent 404 requests -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23050a14'/><rect x='4' y='4' width='8' height='8' fill='%2300f5ff'/></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Visually hidden ARIA live announcer for screen readers -->
+  <div id="announcer" aria-live="polite" class="sr-only"></div>
+
+  <div id="game-container" tabindex="-1">
+
+    <!-- ── HUD (visible during play or pause) ── -->
+    <header id="hud" role="region" aria-label="Mission Heads-Up Display">
+      <span id="hud-level">LVL 1/10</span>
+      <span id="hud-fragments">FRAGMENTS: 0/6</span>
+      <span id="hud-score">SCORE: 0</span>
+      <span id="hud-best">BEST: 0</span>
+      <span id="hud-dash" class="badge-dash">DASH: READY</span>
+      <span id="hud-diff" class="hud-diff-tag">NORMAL</span>
+      <button class="hud-btn" id="btn-pause" type="button">PAUSE</button>
+      <button class="hud-btn" id="btn-restart-hud" type="button">RESTART</button>
+      <button class="hud-btn btn-toggle-fs" id="btn-fullscreen" type="button" aria-label="Toggle Fullscreen">⛶ FULLSCREEN</button>
+      <button class="hud-btn" id="btn-mute" type="button" aria-pressed="false">Sound: On</button>
+      <div id="hud-time-container">
+        <span id="hud-low-time" class="badge-low-time" style="display:none;" aria-hidden="true">LOW TIME</span>
+        <span id="hud-time">TIME: 1:30</span>
+      </div>
+    </header>
+
+    <!-- ── Canvas wrapper (arena + overlays) ── -->
+    <main id="canvas-wrapper">
+      <canvas id="game-canvas" role="img" aria-label="Game arena. Move with WASD or arrow keys, or on-screen touch joystick."></canvas>
+
+      <!-- ── Overlay panel (Modal dialogs) ── -->
+      <div id="overlay" class="visible" role="presentation">
+
+        <!-- 1. MAIN MENU screen dialog -->
+        <div id="screen-start" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="start-title">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// SECTOR TERMINAL: RELIC-OS v5.2</span>
+            <span class="terminal-status"><span class="status-dot"></span>SYS.ONLINE</span>
+          </div>
+          <h1 id="start-title" class="overlay-title cyan">NEON RELIC</h1>
+          <p class="overlay-title cyan subtitle-brand">THE LAST SIGNAL</p>
+          
+          <div class="overlay-briefing">
+            <p class="overlay-subtitle main-menu-desc">
+              Enter a neon-drenched world of danger, exploration, and survival. Master every challenge, overcome hostile environments, and uncover the secrets hidden within the relic.
+            </p>
+            <div class="menu-tagline-container">
+              <span class="menu-tagline">Survive the Neon. Discover the Unknown. The Relic Awaits.</span>
+            </div>
+          </div>
+
+          <p class="overlay-stat">BEST SCORE: <span id="start-best">0</span></p>
+          <p id="start-no-save" class="overlay-warning" style="display:none;">Progress can't be saved in this browser.</p>
+
+          <!-- Main Menu Navigation Buttons -->
+          <div class="menu-nav-stack" role="group" aria-label="Main Menu Actions">
+            <button class="overlay-btn primary-btn btn-menu-large" id="btn-menu-start" type="button">
+              <span class="btn-icon">▶</span> START GAME
+            </button>
+            <div class="menu-btn-row">
+              <button class="overlay-btn" id="btn-menu-settings" type="button">
+                <span class="btn-icon">⚙</span> SETTINGS
+              </button>
+              <button class="overlay-btn" id="btn-menu-controls" type="button">
+                <span class="btn-icon">🎮</span> CONTROLS
+              </button>
+            </div>
+            <div class="menu-btn-row">
+              <button class="overlay-btn magenta-btn" id="btn-menu-quit" type="button">
+                <span class="btn-icon">⏻</span> QUIT GAME
+              </button>
+              <button class="overlay-btn btn-toggle-fs" id="btn-start-fs" type="button">
+                <span class="btn-icon">⛶</span> FULLSCREEN
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DIFFICULTY SELECTION screen dialog -->
+        <div id="screen-difficulty" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="diff-screen-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// MISSION DEPLOYMENT // OPERATIVE PROTOCOL</span>
+            <span class="terminal-status"><span class="status-dot"></span>CONFIG</span>
+          </div>
+          <h2 id="diff-screen-title" class="overlay-title cyan">DIFFICULTY SELECTION</h2>
+          <p class="overlay-subtitle">Select combat difficulty and starting deployment sector.</p>
+
+          <!-- 3 Authoritative Difficulty Cards -->
+          <div class="diff-cards-grid" role="radiogroup" aria-label="Difficulty Mode">
+            <div class="diff-card" id="card-diff-basic" data-diff="basic" tabindex="0" role="radio" aria-checked="false">
+              <div class="diff-card-badge badge-basic">RECRUIT</div>
+              <h3 class="diff-card-name">BASIC</h3>
+              <p class="diff-card-desc">A more forgiving experience for learning the game.</p>
+              <ul class="diff-card-stats">
+                <li><span>TIMER:</span> +25% generous limit</li>
+                <li><span>DRONES:</span> -20% patrol speed</li>
+                <li><span>PENALTY:</span> -25 pts / -3s hit</li>
+              </ul>
+              <button type="button" class="diff-btn" id="btn-diff-basic" data-diff="basic" tabindex="-1">SELECT BASIC</button>
+            </div>
+
+            <div class="diff-card active" id="card-diff-normal" data-diff="normal" tabindex="0" role="radio" aria-checked="true">
+              <div class="diff-card-badge badge-normal">OPERATIVE</div>
+              <h3 class="diff-card-name">MEDIUM</h3>
+              <p class="diff-card-desc">A balanced challenge for players familiar with the game.</p>
+              <ul class="diff-card-stats">
+                <li><span>TIMER:</span> Standard calibrated</li>
+                <li><span>DRONES:</span> Standard velocity</li>
+                <li><span>PENALTY:</span> -50 pts / -5s hit</li>
+              </ul>
+              <button type="button" class="diff-btn active" id="btn-diff-normal" data-diff="normal" tabindex="-1">SELECT MEDIUM</button>
+            </div>
+
+            <div class="diff-card" id="card-diff-hard" data-diff="hard" tabindex="0" role="radio" aria-checked="false">
+              <div class="diff-card-badge badge-hard">CYBERNETIC</div>
+              <h3 class="diff-card-name">HARD</h3>
+              <p class="diff-card-desc">A demanding experience that tests your skills.</p>
+              <ul class="diff-card-stats">
+                <li><span>TIMER:</span> -15% tight limit</li>
+                <li><span>DRONES:</span> +15% rapid pursuit</li>
+                <li><span>PENALTY:</span> -75 pts / -6s hit</li>
+              </ul>
+              <button type="button" class="diff-btn" id="btn-diff-hard" data-diff="hard" tabindex="-1">SELECT HARD</button>
+            </div>
+          </div>
+          <p id="diff-description" class="diff-desc sr-only">Standard Operation: Calibrated drone velocity and balanced countdown timers.</p>
+
+          <!-- Sector Deployment Selection -->
+          <div class="sector-select-container" role="group" aria-label="Starting Sector Selection">
+            <span class="cyber-label">DEPLOYMENT SECTOR:</span>
+            <div class="sector-pills" id="sector-pills">
+              <button type="button" class="sector-pill active" data-sector="0">01</button>
+              <button type="button" class="sector-pill" data-sector="1">02</button>
+              <button type="button" class="sector-pill" data-sector="2">03</button>
+              <button type="button" class="sector-pill" data-sector="3">04</button>
+              <button type="button" class="sector-pill" data-sector="4">05</button>
+              <button type="button" class="sector-pill" data-sector="5">06</button>
+              <button type="button" class="sector-pill" data-sector="6">07</button>
+              <button type="button" class="sector-pill" data-sector="7">08</button>
+              <button type="button" class="sector-pill" data-sector="8">09</button>
+              <button type="button" class="sector-pill" data-sector="9">10</button>
+            </div>
+            <!-- Sector Information Card -->
+            <div id="sector-info-card" class="sector-info-card" aria-live="polite">
+              <div class="sector-card-header">
+                <span id="sector-card-title">SECTOR 01: ENTRY PROTOCOL</span>
+                <span id="sector-card-diff" class="sector-diff-badge diff-easy">EASY</span>
+              </div>
+              <p id="sector-card-desc">Infiltrate simple security grid. Gather 6 energy fragments and extract.</p>
+            </div>
+          </div>
+
+          <div class="overlay-actions">
+            <button class="overlay-btn primary-btn" id="btn-start" type="button">DEPLOY TO SECTOR 01</button>
+            <button class="overlay-btn" id="btn-diff-back" type="button">◀ BACK TO MAIN MENU</button>
+          </div>
+        </div>
+
+        <!-- 3. DEDICATED SETTINGS screen dialog -->
+        <div id="screen-settings" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// SYSTEM CONFIGURATION // PREFERENCES</span>
+            <span class="terminal-status"><span class="status-dot"></span>READY</span>
+          </div>
+          <h2 id="settings-title" class="overlay-title cyan">SETTINGS</h2>
+          <p class="overlay-subtitle">Audio, graphics, motion parameters, and mission data.</p>
+
+          <div class="settings-grid-layout">
+            <!-- Audio Preferences -->
+            <div class="settings-group" role="group" aria-label="Audio Configuration">
+              <h3 class="settings-group-title">AUDIO CONTROLS</h3>
+              <div class="setting-row" id="volume-control-container">
+                <label for="setting-volume">Master Volume: <span id="volume-val">50%</span></label>
+                <input type="range" id="setting-volume" min="0" max="100" step="5" value="50" aria-label="Master Audio Volume" />
+              </div>
+              <div class="setting-row">
+                <label for="setting-music">Music Volume: <span id="music-val">60%</span></label>
+                <input type="range" id="setting-music" min="0" max="100" step="5" value="60" aria-label="Music Volume" />
+              </div>
+              <div class="setting-row">
+                <label for="setting-sfx">SFX Volume: <span id="sfx-val">70%</span></label>
+                <input type="range" id="setting-sfx" min="0" max="100" step="5" value="70" aria-label="Sound Effects Volume" />
+              </div>
+              <div class="setting-row">
+                <span class="setting-label-text">Audio Output:</span>
+                <button class="overlay-btn setting-btn-toggle" id="btn-setting-mute" type="button">SOUND: ON</button>
+              </div>
+            </div>
+
+            <!-- Graphics & Motion -->
+            <div class="settings-group" role="group" aria-label="Graphics and Accessibility">
+              <h3 class="settings-group-title">VISUALS &amp; MOTION</h3>
+              <div class="setting-row">
+                <label for="setting-effects">Motion / Effects:</label>
+                <select id="setting-effects" aria-label="Visual Motion Effects Setting">
+                  <option value="auto">Auto (System)</option>
+                  <option value="full">Full Motion</option>
+                  <option value="reduced">Reduced Motion</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label-text">Screen Shake:</span>
+                <button class="overlay-btn setting-btn-toggle" id="btn-setting-shake" type="button" aria-pressed="true">SHAKE: ON</button>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label-text">CRT Scanlines:</span>
+                <button class="overlay-btn setting-btn-toggle" id="btn-setting-crt" type="button" aria-pressed="true">SCANLINES: ON</button>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label-text">Display Mode:</span>
+                <button class="overlay-btn setting-btn-toggle btn-toggle-fs" id="btn-setting-fs" type="button">⛶ FULLSCREEN</button>
+              </div>
+            </div>
+
+            <!-- Mission Records Data -->
+            <div class="settings-group settings-group-full" role="group" aria-label="Mission Data">
+              <h3 class="settings-group-title">DATA MANAGEMENT</h3>
+              <div class="setting-row-data">
+                <span>Stored Best Score: <strong id="settings-best-val" style="color:var(--neon-gold)">0</strong></span>
+                <a href="javascript:void(0)" id="btn-reset-best" class="overlay-link" role="button">Reset best score</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay-actions">
+            <button class="overlay-btn primary-btn" id="btn-settings-back" type="button">◀ BACK</button>
+            <button class="overlay-btn" id="btn-settings-defaults" type="button">RESTORE DEFAULTS</button>
+          </div>
+        </div>
+
+        <!-- 4. TACTICAL CONTROLS screen dialog -->
+        <div id="screen-controls" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="controls-screen-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// FIELD MANUAL // TACTICAL DIRECTIVES</span>
+            <span class="terminal-status"><span class="status-dot"></span>SYSTEMS</span>
+          </div>
+          <h2 id="controls-screen-title" class="overlay-title cyan">CONTROLS &amp; DIRECTIVES</h2>
+          <p class="overlay-subtitle">Locomotion, evasion tactics, and shortcut keys.</p>
+
+          <div class="controls-grid" aria-label="Game controls list">
+            <span class="key">WASD / ARROWS</span><span>Move operative (opposing directions cancel cleanly)</span>
+            <span class="key">SPACE / SHIFT</span><span>Cyber Dash (burst boost, invulnerable window, 2.0s cooldown)</span>
+            <span class="key">P / ESC</span><span>Pause / Resume mission telemetry</span>
+            <span class="key">F</span><span>Toggle Fullscreen mode</span>
+            <span class="key">R</span><span>Quick restart mission</span>
+            <span class="key">M</span><span>Toggle Audio synthesizer / Mute</span>
+            <span class="key">ENTER / SPACE</span><span>Confirm / Advance menu dialogs</span>
+            <span class="key touch-hint">MOBILE TOUCH</span><span class="touch-hint">On-screen analog joystick + Dash, Pause &amp; Fullscreen action pills</span>
+          </div>
+
+          <div class="overlay-actions">
+            <button class="overlay-btn primary-btn" id="btn-controls-back" type="button">◀ BACK TO MAIN MENU</button>
+          </div>
+        </div>
+
+        <!-- 5. QUIT CONFIRMATION screen dialog -->
+        <div id="screen-quit" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="quit-screen-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// MISSION ABORT // TERMINAL DISCONNECT</span>
+            <span class="terminal-status danger"><span class="status-dot"></span>STANDBY</span>
+          </div>
+          <h2 id="quit-screen-title" class="overlay-title magenta">QUIT GAME?</h2>
+          <p class="overlay-subtitle" id="quit-message">
+            Are you sure you want to exit the mission terminal? Any active sector run progress will be abandoned.
+          </p>
+          <div class="overlay-actions">
+            <button class="overlay-btn magenta-btn" id="btn-quit-confirm" type="button">ABORT &amp; EXIT</button>
+            <button class="overlay-btn primary-btn" id="btn-quit-cancel" type="button">RETURN</button>
+          </div>
+        </div>
+
+        <!-- 6. PAUSED screen dialog -->
+        <div id="screen-paused" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// SYSTEM SUSPENDED // TELEMETRY HOLD</span>
+            <span class="terminal-status warning"><span class="status-dot"></span>STANDBY</span>
+          </div>
+          <h2 id="pause-title" class="overlay-title cyan">— PAUSED —</h2>
+          <div class="pause-diff-info">
+            ACTIVE PROFILE: <span id="pause-diff-badge" class="sector-diff-badge diff-normal">MEDIUM</span>
+          </div>
+          <p class="overlay-subtitle">Press P or Esc to resume, R to restart level.</p>
+          <div class="overlay-actions">
+            <button class="overlay-btn primary-btn" id="btn-resume" type="button">RESUME</button>
+            <button class="overlay-btn" id="btn-restart-pause" type="button">RESTART LEVEL</button>
+            <button class="overlay-btn" id="btn-pause-settings" type="button">SETTINGS</button>
+            <button class="overlay-btn magenta-btn" id="btn-title-pause" type="button">MAIN MENU</button>
+            <button class="overlay-btn btn-toggle-fs" id="btn-pause-fs" type="button">⛶ FULLSCREEN</button>
+          </div>
+        </div>
+
+        <!-- 7. LEVEL_COMPLETE screen dialog -->
+        <div id="screen-level-complete" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="lc-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// EXTRACTION SUCCESSFUL // SECTOR COMPLETE</span>
+            <span class="terminal-status success"><span class="status-dot"></span>CLEARED</span>
+          </div>
+          <h2 id="lc-title" class="overlay-title lime">SECTOR CLEARED</h2>
+          <p class="overlay-subtitle" id="lc-next-label">NEXT: SECTOR 02</p>
+          <p class="overlay-stat">SECTOR BONUS: <span id="lc-bonus" style="color:var(--neon-lime);">+250</span></p>
+          <p class="overlay-stat">TOTAL SCORE: <span id="lc-score">0</span></p>
+          <div class="overlay-actions">
+            <button class="overlay-btn primary-btn" id="btn-next-level" type="button">PROCEED TO NEXT SECTOR</button>
+            <button class="overlay-btn btn-toggle-fs" id="btn-lc-fs" type="button">⛶ FULLSCREEN</button>
+            <button class="overlay-btn magenta-btn" id="btn-restart-lc" type="button">RESTART RUN</button>
+          </div>
+        </div>
+
+        <!-- 8. WON screen dialog -->
+        <div id="screen-won" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="won-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// RELIC UPLINK ESTABLISHED // MISSION SUCCESS</span>
+            <span class="terminal-status success"><span class="status-dot"></span>TRANSMITTING</span>
+          </div>
+          <h2 id="won-title" class="overlay-title lime">MISSION COMPLETE</h2>
+          <p class="overlay-subtitle" style="color:var(--neon-cyan);font-weight:bold;">ALL 10 SECTORS SECURED • THE LAST SIGNAL TRANSMITTED</p>
+          <p class="badge-record" id="won-record" style="display:none;">★ NEW RECORD! ★</p>
+          <p class="overlay-stat">FINAL SCORE: <span id="won-score">0</span></p>
+          <p class="overlay-stat">BEST SCORE: <span id="won-best">0</span></p>
+          <p class="overlay-stat">TOTAL TIME: <span id="won-time">0:00</span></p>
+          <div class="overlay-actions">
+            <button class="overlay-btn primary-btn" id="btn-restart-won" type="button">PLAY AGAIN</button>
+            <button class="overlay-btn" id="btn-title-won" type="button">TITLE SCREEN</button>
+            <button class="overlay-btn btn-toggle-fs" id="btn-won-fs" type="button">⛶ FULLSCREEN</button>
+          </div>
+        </div>
+
+        <!-- 9. LOST screen dialog -->
+        <div id="screen-lost" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="lost-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// CRITICAL FAILURE // AGENT SIGNAL LOST</span>
+            <span class="terminal-status danger"><span class="status-dot"></span>TERMINATED</span>
+          </div>
+          <h2 id="lost-title" class="overlay-title magenta">MISSION FAILED</h2>
+          <p class="overlay-subtitle" id="lost-reason">Time ran out.</p>
+          <p class="badge-record" id="lost-record" style="display:none;">★ NEW RECORD! ★</p>
+          <p class="overlay-stat">REACHED: <span id="lost-level">SECTOR 1 / 10</span></p>
+          <p class="overlay-stat">FINAL SCORE: <span id="lost-score">0</span></p>
+          <p class="overlay-stat">BEST SCORE: <span id="lost-best">0</span></p>
+          <div class="overlay-actions">
+            <button class="overlay-btn magenta-btn" id="btn-restart-lost" type="button">TRY AGAIN</button>
+            <button class="overlay-btn" id="btn-title-lost" type="button">TITLE SCREEN</button>
+            <button class="overlay-btn btn-toggle-fs" id="btn-lost-fs" type="button">⛶ FULLSCREEN</button>
+          </div>
+        </div>
+
+        <!-- 10. ERROR screen dialog -->
+        <div id="screen-error" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="error-title" style="display:none;">
+          <div class="terminal-header" aria-hidden="true">
+            <span class="terminal-tag">// KERNEL EXCEPTION // SYSTEM MALFUNCTION</span>
+            <span class="terminal-status danger"><span class="status-dot"></span>RECOVER</span>
+          </div>
+          <h2 id="error-title" class="overlay-title magenta">SYSTEM MALFUNCTION</h2>
+          <p class="overlay-subtitle">Something went wrong. Press Restart or reload.</p>
+          <button class="overlay-btn magenta-btn" id="btn-restart-error" type="button">RESTART MISSION</button>
+        </div>
+
+      </div><!-- /overlay -->
+    </main><!-- /canvas-wrapper -->
+
+    <!-- ── Mobile Touch Controls Overlay ── -->
+    <div id="touch-controls" class="touch-controls-layer" aria-hidden="true">
+      <div id="touch-joystick-zone" class="touch-zone">
+        <div id="joystick-base">
+          <div id="joystick-knob"></div>
+          <span class="joystick-cardinal cardinal-n">▲</span>
+          <span class="joystick-cardinal cardinal-s">▼</span>
+          <span class="joystick-cardinal cardinal-w">◀</span>
+          <span class="joystick-cardinal cardinal-e">▶</span>
+        </div>
+      </div>
+      <div id="touch-actions-zone" class="touch-zone">
+        <button id="touch-btn-dash" class="touch-btn-circle" type="button" aria-label="Cyber Dash">
+          <span class="touch-icon">⚡</span>
+          <span class="touch-label">DASH</span>
+        </button>
+        <button id="touch-btn-fullscreen" class="touch-btn-circle btn-toggle-fs" type="button" aria-label="Toggle Fullscreen">
+          <span class="touch-icon">⛶</span>
+          <span class="touch-label">FULL</span>
+        </button>
+        <button id="touch-btn-pause" class="touch-btn-circle" type="button" aria-label="Pause Game">
+          <span class="touch-icon">⏸</span>
+          <span class="touch-label">PAUSE</span>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /game-container -->
+
+  <!-- Load in strict order: logic -> audio -> effects -> game -->
+  <script src="logic.js"></script>
+  <script src="audio.js"></script>
+  <script src="effects.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

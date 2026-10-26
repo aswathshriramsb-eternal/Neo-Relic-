@@ -1,0 +1,25 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor & IDE artifacts
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node temporary / test outputs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Backups and temporary scratch files
+*~
+*.bak
+*.tmp
+backup/
+backup*/
+

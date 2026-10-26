@@ -1,0 +1,55 @@
+============================================================
+ NEON RELIC: THE LAST SIGNAL — AUTOMATED SELF-TEST REPORT
+ Generated: 2026-10-26T13:14:28.125Z
+============================================================
+
+[PASS] T01 [Geometry] circleRect hit when circle center is inside rect -> Expected: true | Actual: true
+[PASS] T02 [Geometry] circleRect hit when circle overlaps edge of rect -> Expected: true | Actual: true
+[PASS] T03 [Geometry] circleRect miss when circle is completely outside rect -> Expected: false | Actual: false
+[PASS] T04 [Geometry] circleRect edge-touch behavior at distance exactly r -> Expected: false (< strict inequality) | Actual: false
+[PASS] T05 [Geometry] rectRect collision detection: overlap and disjoint -> Expected: overlap=true, disjoint=false | Actual: overlap=true, disjoint=false
+[PASS] T06 [Drones] 80% drone radius calculation: hit inside, miss outside -> Expected: hitNear=true, hitFar=false | Actual: hitNear=true, hitFar=false
+[PASS] T07 [Controls] Diagonal input normalizes magnitude to exactly 1.0 -> Expected: 1.0 (epsilon < 1e-6) | Actual: 1.0000000
+[PASS] T08 [Controls] Opposite key cancel produces zero movement -> Expected: dx: 0, dy: 0 | Actual: dx: 0, dy: 0
+[PASS] T09 [Scoring] clampScore clamps negative values strictly to 0 -> Expected: 0, 0, 150 | Actual: 0, 0, 150
+[PASS] T10 [Persistence] sanitizeSave safely handles corrupt JSON string -> Expected: version: 1, bestScore: 0, defaults | Actual: {"version":1,"bestScore":0,"settings":{"muted":false,"volume":0.5,"effects":"auto","difficulty":"normal"}}
+[PASS] T11 [Persistence] sanitizeSave clamps negative or NaN bestScore to 0 -> Expected: bestScore: 0 for both | Actual: neg=0, nan=0
+[PASS] T12 [Persistence] sanitizeSave migrates Day 2 save preserving bestScore and filling default settings -> Expected: bestScore: 1850, muted: true, vol: 0.5, effects: auto | Actual: {"version":1,"bestScore":1850,"unlockedLevel":1,"completedLevels":[],"settings":{"muted":true,"volume":0.5,"effects":"auto","difficulty":"normal"}}
+[PASS] T13 [Persistence] sanitizeSave preserves valid Schema v1 save data intact -> Expected: preserved intact | Actual: {"version":1,"bestScore":2400,"unlockedLevel":1,"completedLevels":[],"settings":{"muted":false,"volume":0.8,"effects":"reduced","difficulty":"normal"}}
+[PASS] T14 [Level Design] validateLevels verifies all 3 levels satisfy fairness constraints (0 violations) -> Expected: 0 violations | Actual: 0 violations
+[PASS] T15 [State Machine] canTransition permits valid gameplay and Title transitions -> Expected: all valid (true) | Actual: v1=true v2=true v3=true v4=true v5=true
+[PASS] T16 [State Machine] canTransition blocks illegal state transitions -> Expected: all false | Actual: i1=false i2=false i3=false
+[PASS] T17 [Drones] Drone patterns A, B, C, D stay inside bounds over 10,000 steps -> Expected: escaped = false | Actual: escaped = false
+[PASS] T18 [Accessibility] joinAnnouncements correctly handles multiple rapid messages -> Expected: "Hit: minus 50 points. Time low", "Only text", "First" | Actual: "Hit: minus 50 points. Time low", "Only text", "First"
+[PASS] T19 [RNG] Mulberry32 produces identical sequence for same seed and differs for different seeds -> Expected: sameA=true, diffB=true | Actual: sameA=true, diffB=true
+[PASS] T20 [Balance] analyzeLevels verifies all 3 levels satisfy Phase 3 balance targets -> Expected: allPassed=true | Actual: true | L1(ratio=0.125, spd=0.5) L2(ratio=0.11, spd=0.614) L3(ratio=0.113, spd=0.727)
+[PASS] T21 [Bot Sim] Deterministic bot clears all levels reliably (L1/L2 >= 8/10, L3 >= 6/10) -> Expected: L1 >= 8, L2 >= 8, L3 >= 6 | Actual: L1: 10/10, L2: 10/10, L3: 10/10
+[PASS] T22 [Touch Controls] calculateJoystickVector respects deadzone, normalizes direction, and clamps max radius -> Expected: deadZone: 0, cardinal: (1, 0), normalized magnitude: 1.0, clampedDist: 45 | Actual: deadPass=true, cardPass=true, diagPass=true (mag=1.00000, clampedDist=45)
+[PASS] T23 [Campaign] validateLevels verifies all 10 campaign levels meet fairness constraints -> Expected: 10 levels valid (0 violations) | Actual: 10 levels valid (0 violations)
+[PASS] T24 [Balance] analyzeLevels verifies all 10 campaign levels meet time ratio and speed targets -> Expected: all 10 levels pass route & speed targets (allPassed=true) | Actual: allPassed=true (10/10 sectors verified)
+[PASS] T25 [Difficulty] getDifficultyModifiers returns calibrated parameters for Basic, Normal, and Hard -> Expected: basic(+25% time, -20% spd, -25pts), normal(1x), hard(-15% time, +15% spd, -75pts) | Actual: basic=true, normal=true, hard=true
+
+============================================================
+ SESSION 2 (DAY 2) CROSS-CHECK VERIFICATION TABLE
+============================================================
+[PASS] [Cross-Check] Level 1 (Sector 01) -> Requirement: 6 frags, 3 drones (110 px/s), 90s timer | Implementation: 6 frags, 3 drones, 90s
+[PASS] [Cross-Check] Level 2 (Sector 02) -> Requirement: 8 frags, 4 drones (135 px/s), 100s timer, carry score | Implementation: 8 frags, 4 drones, 100s, carried score
+[PASS] [Cross-Check] Level 3 (Sector 03) -> Requirement: 10 frags, 5 drones (160 px/s), 110s timer, carry score | Implementation: 10 frags, 5 drones, 110s, carried score
+[PASS] [Cross-Check] Sector Clear Bonus -> Requirement: +250 once per extraction (idempotent) | Implementation: levelBonusAwarded guard protects single award
+[PASS] [Cross-Check] Score Clamping -> Requirement: Score clamped >= 0; hit at 0 still deducts 5s | Implementation: NeonLogic.clampScore, timeRemaining -= 5
+[PASS] [Cross-Check] Collision Cooldown -> Requirement: 1 penalty per contact, 2nd only after 1.5s | Implementation: hitCooldownTimer = 1.5s, player blink
+[PASS] [Cross-Check] Progression Flow -> Requirement: Level Complete on L1/L2; Final Victory on L3 | Implementation: L1/L2: LEVEL_COMPLETE, L3: WON
+[PASS] [Cross-Check] Defeat Flow -> Requirement: Timeout stops gameplay, shows sector reached | Implementation: LOST state halts updates, shows level reached
+[PASS] [Cross-Check] Persistence -> Requirement: LocalStorage key neonRelic.v1, survives reload | Implementation: Schema v1, corrupt recovery & migration
+[PASS] [Cross-Check] Pause / Resume -> Requirement: Freezes timer, drones, cooldown, audio; auto-pause | Implementation: update() guard, clearKeys(), audio.suspend()
+[PASS] [Cross-Check] Restart Reliability -> Requirement: Restart from any state keeping best score | Implementation: startNewRun() resets level 0, keeps bestScore
+[PASS] [Cross-Check] 10 Campaign Sectors -> Requirement: 10 playable sectors with progressive difficulty (6..15 frags, 3..8 drones) | Implementation: LEVELS array has 10 valid sectors, all validated
+[PASS] [Cross-Check] Difficulty Modes -> Requirement: Basic, Normal, Hard with modifiers for time, speed, penalty | Implementation: NeonLogic.getDifficultyModifiers + UI selector pills
+[PASS] [Cross-Check] Sector Select Pills -> Requirement: Direct deployment to any sector 01-10 on user tap/click | Implementation: setSelectedSector() + sector-pill UI active states
+[PASS] [Cross-Check] Fullscreen Action -> Requirement: Toggle fullscreen on button or KeyF | Implementation: toggleFullscreen() + updateFullscreenUI()
+
+------------------------------------------------------------
+SUMMARY: 25 PASSED, 0 FAILED (TOTAL: 25)
+CROSS-CHECKS: 15 VERIFIED (0 FAILED)
+RESULT: ALL SELF-TESTS & CROSS-CHECKS PASSED
+------------------------------------------------------------

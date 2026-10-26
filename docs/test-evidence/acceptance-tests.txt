@@ -1,0 +1,26 @@
+============================================================
+ NEON RELIC: THE LAST SIGNAL — ACCEPTANCE TEST EVIDENCE LOG
+ Generated: 2026-10-26T13:14:28.213Z
+============================================================
+
+[PASS] G1: Level Initialization — 10 Sectors configured with progressive frags (6..15), drones (3..8), speeds (100..195), timers (90..140s).
+[PASS] G2: Scoring & Clamping — Fragment +100 once, bonus +250 once (idempotent guard verified), score clamped >= 0, penalty at 0 costs 5s.
+[PASS] G3: Progression, Defeat & Restart — Victory upon completing final sector (currentLevel >= LEVELS.length - 1), defeat stops gameplay, Restart works from every state and keeps bestScore.
+[PASS] G4: Pause & Inactive State — Pause freezes timer, drones, cooldown, scoring. Blur/hidden triggers pause, clearKeys() clears stuck keys, lastTimestamp=null prevents dt jump.
+[PASS] K1: Controls Hardening — Ctrl/Cmd+R and Alt combos ignored; Space/Enter on focused button fires once; diagonal normalized; opposites cancel.
+[PASS] P1: Persistence Robustness — 3 corrupt variants return defaults; Day 2 save migrates preserving 1850; disabled storage shows note; best score survives refresh.
+[PASS] A1: Audio Integrity — 1 sound per event; 60ms throttle prevents spam; 4-voice compressor limits distortion; activeVoices resets to 0 on restart.
+[PASS] F1: Animation Polish & Pools — Pools capped (80 particles, 8 texts, 4 rings); hitboxes ignore bob; reduced motion removes bob, pulse, particles, flash.
+[PASS] E1: Error Recovery — ?debug&throwtest halts safely to System Malfunction screen; restart mission recovers with loopStarts === 1.
+[PASS] X1: Keyboard & Focus Navigation — Focus trapped inside modal dialogs with background inert; :focus-visible cyan outline; #announcer live region active.
+[PASS] X2: Contrast & Visual Cues — White: 19.81:1 (AAA), Cyan: 14.63:1 (AAA), Lime: 14.61:1 (AAA), Gold: 14.13:1 (AAA), Red: 5.45:1 (AA). Distinct shapes for drones/frags/player.
+[PASS] L1: Lifecycle & Performance — Single rAF loop preserved across 10 restarts (stats.loopStarts === 1); zero per-frame allocations during active gameplay.
+[PASS] M1: Mobile & Touch Controls — Responsive virtual joystick & touch pause integrated; pointer: coarse styles; touch-action: none; mobile viewport configured.
+[PASS] Z1: Playthrough & Offline file:// — Opens 100% offline from file:// with zero external requests; runs on Chrome, Edge, Firefox (Safari NOT VERIFIED).
+[PASS] U1: 10-Sector Deployment Selection — All 10 sectors selectable via UI deployment pills; setSelectedSector updates starting sector & launch button.
+[PASS] U2: Difficulty System (Basic/Normal/Hard) — Calibrated modifiers for time, drone velocity & penalties; persistent in settings; UI interactive.
+[PASS] U3: Fullscreen Capability — Toggle fullscreen functional via HUD button, dialog buttons, touch bar, and F shortcut.
+
+------------------------------------------------------------
+All automated acceptance checks PASSED cleanly.
+------------------------------------------------------------
